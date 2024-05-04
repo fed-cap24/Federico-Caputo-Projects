@@ -22,7 +22,7 @@ locals {
 }
 
 module "containers" {
-  source = "git::https://github.com/fed-cap24/Federico-Caputo-Projects/tree/main/Terraform/AWS/modules/container_definitions"
+  source = "git::https://github.com/fed-cap24/Federico-Caputo-Projects.git//Terraform/AWS/modules/container_definitions"
   network_mode  = var.task_definition.network_mode
   tags          = var.tags
 

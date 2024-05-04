@@ -1,8 +1,8 @@
-resource "aws_secretsmanager_secret" "hubmobeats" {
-  name = var.project-tags.project != null && var.project-tags.project != "" ? "hubmobeats-${var.project-tags.project}" : "hubmobeats"
+resource "aws_secretsmanager_secret" "secret" {
+  name = var.project-tags.project != null && var.project-tags.project != "" ? "secret-${var.project-tags.project}" : "secret"
 }
 
-resource "aws_secretsmanager_secret_version" "hubmobeats" {
-  secret_id     = aws_secretsmanager_secret.hubmobeats.id
-  secret_string = jsonencode(var.hubmobeats)
+resource "aws_secretsmanager_secret_version" "secret" {
+  secret_id     = aws_secretsmanager_secret.secret.id
+  secret_string = jsonencode(var.secret)
 }

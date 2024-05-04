@@ -8,14 +8,14 @@ variable "demo_tags"{
 
 # Create a demo VPC
 module "demo_vpc" {
-    source   = "git::https://github.com/fed-cap24/Federico-Caputo-Projects/tree/main/Terraform/AWS/modules/vpc"
+    source   = "git::https://github.com/fed-cap24/Federico-Caputo-Projects.git//Terraform/AWS/modules/vpc"
     tags     = var.demo_tags
 }
 
 # Create a Load Balancer for the VPC
 
 module "demo_alb" {
-    source            = "git::https://github.com/fed-cap24/Federico-Caputo-Projects/tree/main/Terraform/AWS/modules/alb"
+    source            = "git::https://github.com/fed-cap24/Federico-Caputo-Projects.git//Terraform/AWS/modules/alb"
     tags              = var.demo_tags
     vpc               = module.demo_vpc
     alb_sg            = [aws_security_group.http_https.id]
@@ -34,7 +34,7 @@ module "demo_alb" {
 # Create a Bastion Host for the VPC
 
 module "demo_bastion" {
-    source            = "git::https://github.com/fed-cap24/Federico-Caputo-Projects/tree/main/Terraform/AWS/modules/bastion_host"
+    source            = "git::https://github.com/fed-cap24/Federico-Caputo-Projects.git//Terraform/AWS/modules/bastion_host"
     tags              = var.demo_tags
     vpc               = module.demo_vpc
     bastion_sg        = aws_security_group.bastion.id
@@ -45,7 +45,7 @@ module "demo_bastion" {
 # Create an ECS Cluster
 
 module "demo_ECS_Cluster" {
-    source        = "git::https://github.com/fed-cap24/Federico-Caputo-Projects/tree/main/Terraform/AWS/modules/ecs"
+    source        = "git::https://github.com/fed-cap24/Federico-Caputo-Projects.git//Terraform/AWS/modules/ecs"
     tags          = var.demo_tags
     bastion_host  = module.demo_bastion
     ec2_instance_role_profile_arn = aws_iam_instance_profile.ec2_instance_role_profile.arn
@@ -60,12 +60,12 @@ module "demo_ECS_Cluster" {
 # Create an ECS service
 
 module "demo_ECS_service"{
-  source            = "git::https://github.com/fed-cap24/Federico-Caputo-Projects/tree/main/Terraform/AWS/modules/ecs_service"
+  source            = "git::https://github.com/fed-cap24/Federico-Caputo-Projects.git//Terraform/AWS/modules/ecs_service"
   tags              = var.demo_tags
   ecs_cluster       = module.demo_ECS_Cluster
 
   ecs_task_execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
-  #secret_credential = aws_secretsmanager_secret.hubmobeats.arn
+  #secret_credential = aws_secretsmanager_secret.secret.arn
   
   aws_region        = var.aws_region
   service = {

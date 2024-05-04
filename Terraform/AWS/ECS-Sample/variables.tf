@@ -15,7 +15,7 @@ variable "project-tags" {
   }
 }
 
-variable "hubmobeats" {
+variable "secret" {
   type = map(string)
 
   default = {

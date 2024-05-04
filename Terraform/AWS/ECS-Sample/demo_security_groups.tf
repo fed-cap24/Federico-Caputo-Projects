@@ -7,40 +7,8 @@ resource "aws_security_group" "bastion" {
         from_port       = 22
         to_port         = 22
         protocol        = "tcp"
-        cidr_blocks     = ["181.229.252.40/32"]
-        description     = "IP publica Federico Caputo"
-    }
-    
-    ingress {
-        from_port       = 22
-        to_port         = 22
-        protocol        = "tcp"
-        cidr_blocks     = ["186.13.136.64/32"]
-        description     = "IP publica Jonathan Collante"
-    }
-
-    ingress {
-        from_port       = 22
-        to_port         = 22
-        protocol        = "tcp"
-        cidr_blocks     = ["186.128.217.93/32"]
-        description     = "IP publica Aaron Bernal"
-    }
-
-    ingress {
-        from_port       = 22
-        to_port         = 22
-        protocol        = "tcp"
-        cidr_blocks     = ["186.128.178.217/32"]
-        description     = "IP publica Seba Fiorentino"
-    }
-
-    ingress {
-        from_port       = 22
-        to_port         = 22
-        protocol        = "tcp"
-        cidr_blocks     = ["168.226.214.139/32"]
-        description     = "IP Publica de Mobeats HQ"
+        cidr_blocks     = ["0.0.0.0/0"]
+        description     = "IP public"
     }
 
     egress {
@@ -65,15 +33,6 @@ resource "aws_security_group" "http_https" {
         cidr_blocks     = ["0.0.0.0/0"]
         description     = "Allow HTTP access"
     }
-    /*
-    ingress {
-        from_port       = 8080
-        to_port         = 8080
-        protocol        = "tcp"
-        cidr_blocks     = ["0.0.0.0/0"]
-        description     = "Allow HTTP access"
-    }*/
-
 
     ingress {
         from_port       = 443

@@ -4,6 +4,10 @@
 
 The ECS-Modular-Plantilla project is a Terraform-based infrastructure as code (IaC) solution designed to demonstrate the deployment and management of an ECS (Elastic Container Service) environment on Amazon Web Services (AWS). This project showcases the use of modular Terraform modules to provision and manage various AWS resources, including VPCs, Application Load Balancers (ALBs), Bastion Hosts, and ECS services, in a structured and reusable manner. The primary goal is to provide a comprehensive example of how to deploy an Nginx application using a modular approach, ensuring scalability, maintainability, and best practices.
 
+## Important
+
+This project demo_security_group.tf has SSH setup to allow access from anywhere. before deploying, change it to your public IP.
+
 ## Components
 
 The project is composed of several Terraform modules, each responsible for a specific aspect of the infrastructure:
@@ -307,7 +311,7 @@ The project outputs the configuration of the ECS service and target groups, whic
 
 ### Secrets Manager
 
-- `hubmobeats`: The ARN of the secret for the Nginx application credentials.
+- `secret`: The ARN of the secret for the Nginx application credentials.
 
 
 ## Conclusion
