@@ -8,14 +8,14 @@ variable "demo_tags"{
 
 # Create a demo VPC
 module "demo_vpc" {
-    source   = "./modules/vpc"
+    source   = "git::https://github.com/fed-cap24/Federico-Caputo-Projects/tree/main/Terraform/AWS/modules/vpc"
     tags     = var.demo_tags
 }
 
 # Create a Load Balancer for the VPC
 
 module "demo_alb" {
-    source            = "./modules/alb"
+    source            = "git::https://github.com/fed-cap24/Federico-Caputo-Projects/tree/main/Terraform/AWS/modules/alb"
     tags              = var.demo_tags
     vpc               = module.demo_vpc
     alb_sg            = [aws_security_group.http_https.id]
@@ -34,18 +34,18 @@ module "demo_alb" {
 # Create a Bastion Host for the VPC
 
 module "demo_bastion" {
-    source            = "./modules/bastion_host"
+    source            = "git::https://github.com/fed-cap24/Federico-Caputo-Projects/tree/main/Terraform/AWS/modules/bastion_host"
     tags              = var.demo_tags
     vpc               = module.demo_vpc
     bastion_sg        = aws_security_group.bastion.id
-    public_key        = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCs+j155hY8S6NLvG3gWGpY3TEdYcLGHMf8Sc6fqdUe5RHVHoD3l4kIdERLdfWHMcFe/F1brx0PJmiWTv++A5ZneS7f4bLT01faG65MBjM18BLUBET0zxv4hyjHxl8ebqCfQz9Mvj1iiximd5s42uKJev9qxA6IXo+tLZE9aKOhYqVN8sesrZRrGW0q3MtPDaYvz9cswkMU0Cjol1AJVMkVx9p9mQs0vTCKSTcrkUoNhyTmnPcaU+iVTRoTuWPfXpZD4QumEb0Z0Ez0tZGcRWvabDYtRArByljLITWDgdLUlAQ6uua8l4qwY+7E/Ej1Uxxl+NpLcD70CjOyvET2ekEn Feder@DESKTOP-1GM9R3C"
-    private_key_path  = "./aws_sandbox_key"
+    public_key        = "{YOUR-PUBLIC-KEY}"
+    private_key_path  = "{YOUR-PRIVATE-KEY-LOCATION}"
 }
 
 # Create an ECS Cluster
 
 module "demo_ECS_Cluster" {
-    source        = "./modules/ecs"
+    source        = "git::https://github.com/fed-cap24/Federico-Caputo-Projects/tree/main/Terraform/AWS/modules/ecs"
     tags          = var.demo_tags
     bastion_host  = module.demo_bastion
     ec2_instance_role_profile_arn = aws_iam_instance_profile.ec2_instance_role_profile.arn
@@ -60,7 +60,7 @@ module "demo_ECS_Cluster" {
 # Create an ECS service
 
 module "demo_ECS_service"{
-  source            = "./modules/ecs_service"
+  source            = "git::https://github.com/fed-cap24/Federico-Caputo-Projects/tree/main/Terraform/AWS/modules/ecs_service"
   tags              = var.demo_tags
   ecs_cluster       = module.demo_ECS_Cluster
 
