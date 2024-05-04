@@ -1,0 +1,216 @@
+version: '3.8'
+
+x-shared:
+  zammad-service: &zammad-service
+    environment: &zammad-environment
+      MEMCACHE_SERVERS: ${MEMCACHE_SERVERS}
+      POSTGRESQL_DB: ${POSTGRES_DB}
+      POSTGRESQL_HOST: ${POSTGRES_HOST}
+      POSTGRESQL_USER: ${POSTGRES_USER}
+      POSTGRESQL_PASS: ${POSTGRES_PASS}
+      POSTGRESQL_PORT: ${POSTGRES_PORT}
+      REDIS_URL: ${REDIS_URL}
+      # Allow passing in these variables via .env:
+      AUTOWIZARD_JSON:
+      AUTOWIZARD_RELATIVE_PATH:
+      ELASTICSEARCH_ENABLED: "true"
+      ELASTICSEARCH_HOST: zammad-elasticsearch
+      ELASTICSEARCH_PORT:
+      ELASTICSEARCH_SCHEMA:
+      ELASTICSEARCH_NAMESPACE:
+      ELASTICSEARCH_REINDEX:
+      ELASTICSEARCH_SSL_VERIFY:
+      NGINX_PORT:
+      NGINX_SERVER_NAME:
+      NGINX_SERVER_SCHEME: "https"
+      POSTGRESQL_DB_CREATE:
+      POSTGRESQL_OPTIONS:
+      RAILS_TRUSTED_PROXIES:
+      ZAMMAD_WEB_CONCURRENCY:
+      ZAMMAD_SESSION_JOBS:
+      ZAMMAD_PROCESS_SCHEDULED:
+      ZAMMAD_PROCESS_DELAYED_JOBS_WORKERS:
+    image: ${IMAGE_REPO}:${VERSION}
+    restart: ${RESTART}
+    volumes:
+      - /data/zammad-storage:/opt/zammad/storage
+      - /data/zammad-var:/opt/zammad/var
+    depends_on:
+      - zammad-memcached
+      - zammad-postgresql
+      - zammad-redis
+    networks:
+      - zammad-network
+services:
+
+  zammad-backup:
+    command: ["zammad-backup"]
+    depends_on:
+      - zammad-railsserver
+      - zammad-postgresql
+    entrypoint: /usr/local/bin/backup.sh
+    environment:
+      <<: *zammad-environment
+      BACKUP_TIME: "03:00"
+      HOLD_DAYS: "10"
+      TZ: Europe/Berlin
+    image: postgres:${POSTGRES_VERSION}
+    restart: ${RESTART}
+    volumes:
+      - /data/zammad-backup:/var/tmp/zammad
+      - /data/zammad-storage:/opt/zammad/storage:ro
+      - /data/zammad-var:/opt/zammad/var:ro
+      - ./scripts/backup.sh:/usr/local/bin/backup.sh:ro
+    networks:
+      - zammad-network
+    deploy:
+      resources:
+        limits:
+         cpus: '2' # Limit CPU Usage to 2 cores (optional)
+         memory: 100m # Limit Memory Usage to 100 Mib (optional)
+
+  zammad-elasticsearch:
+    image: bitnami/elasticsearch:${ELASTICSEARCH_VERSION}
+    environment:
+      - http.max_content_length=400mb
+      - indices.query.bool.max_clause_count=2000
+      - ELASTICSEARCH_MAX_ALLOWED_MEMORY_PERCENTAGE=80
+      - discovery.type=single-node
+      - data.heapSize=512m
+      - ELASTICSEARCH_HEAP_SIZE=512m
+    restart: ${RESTART}
+    deploy:
+      resources:
+        limits:
+         cpus: '2' # Limit CPU Usage to 2 cores (optional)
+         memory: 1000m # Limit Memory Usage to 1000 Mib (optional)
+    volumes:
+      - /data/elasticsearch-data:/bitnami/elasticsearch/data
+    networks:
+      - zammad-network
+
+  zammad-init:
+    <<: *zammad-service
+    command: ["zammad-init"]
+    depends_on:
+      - zammad-postgresql
+    restart: on-failure
+    user: 0:0
+    volumes:
+      - /data/zammad-storage:/opt/zammad/storage
+      - /data/zammad-var:/opt/zammad/var
+
+  zammad-memcached:
+    command: memcached -m 256M
+    image: memcached:${MEMCACHE_VERSION}
+    restart: ${RESTART}
+    networks:
+      - zammad-network
+    deploy:
+      resources:
+        limits:
+         cpus: '2' # Limit CPU Usage to 2 cores (optional)
+         memory: 100m # Limit Memory Usage to 100 Mib (optional)
+
+  zammad-nginx:
+    <<: *zammad-service
+    command: ["zammad-nginx"]
+    restart: ${RESTART}
+    expose:
+      - "8080"
+    ports:
+      - "80:8080"
+    depends_on:
+      - zammad-railsserver
+    volumes:
+      - /data/zammad-var:/opt/zammad/var:ro # required for the zammad-ready check file
+    networks:
+      - zammad-network
+    deploy:
+      resources:
+        limits:
+         cpus: '2' # Limit CPU Usage to 2 cores (optional)
+         memory: 100m # Limit Memory Usage to 100 Mib (optional)
+
+  zammad-postgresql:
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASS}
+    image: postgres:${POSTGRES_VERSION}
+    restart: ${RESTART}
+    volumes:
+      - /data/postgresql-data:/var/lib/postgresql/data
+    networks:
+      - zammad-network
+    deploy:
+      resources:
+        limits:
+         cpus: '2' # Limit CPU Usage to 2 cores (optional)
+         memory: 500m # Limit Memory Usage to 500 Mib (optional)
+
+
+  zammad-railsserver:
+    <<: *zammad-service
+    command: ["zammad-railsserver"]
+    restart: ${RESTART}
+    networks:
+      - zammad-network
+    deploy:
+      resources:
+        limits:
+         cpus: '2' # Limit CPU Usage to 2 cores (optional)
+         memory: 650m # Limit Memory Usage to 650 Mib (optional)
+
+  zammad-redis:
+    image: redis:${REDIS_VERSION}
+    restart: ${RESTART}
+    volumes:
+      - /data/redis-data:/data
+    networks:
+      - zammad-network
+    deploy:
+      resources:
+        limits:
+         cpus: '2' # Limit CPU Usage to 2 cores (optional)
+         memory: 100m # Limit Memory Usage to 100 Mib (optional)
+
+  zammad-scheduler:
+    <<: *zammad-service
+    command: ["zammad-scheduler"]
+    networks:
+      - zammad-network
+    deploy:
+      resources:
+        limits:
+         cpus: '2' # Limit CPU Usage to 2 cores (optional)
+         memory: 650m # Limit Memory Usage to 650 Mib (optional)
+
+  zammad-websocket:
+    <<: *zammad-service
+    command: ["zammad-websocket"]
+    networks:
+      - zammad-network
+    deploy:
+      resources:
+        limits:
+         cpus: '2' # Limit CPU Usage to 2 cores (optional)
+         memory: 400m # Limit Memory Usage to 400 Mib (optional)
+
+volumes:
+  postgresql-data:
+    driver: local
+  redis-data:
+    driver: local
+  zammad-backup:
+    driver: local
+  zammad-storage:
+    driver: local
+  zammad-var:
+    driver: local
+  elasticsearch-data:
+    driver: local
+
+networks:
+  zammad-network:
+    driver: bridge
