@@ -65,7 +65,6 @@ module "demo_ECS_service"{
   ecs_cluster       = module.demo_ECS_Cluster
 
   ecs_task_execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
-  #secret_credential = aws_secretsmanager_secret.secret.arn
   
   aws_region        = var.aws_region
   service = {
